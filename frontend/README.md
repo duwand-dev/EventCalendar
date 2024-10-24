@@ -1,38 +1,44 @@
-# This is Jack's HomeTask for 10/23
+# Simple Scheduling Calendar Project
 
-## This is a 2-player game of Connect Four with TypeScript and React..
+## What is the use of this project
 
-This will help you spending you mean time enjoyable. Having `Fun`!
+This Project is a Calendar Project which allows users to do following
+
+1. Viewing calendar in four ways - monthly, weekly, daily, events
+2. Making Events using drag/drop in calendar
+3. Adding todos for Events
+4. Changing themes - dark and light
 
 ## Techstacks
 
-`React`, `TailwindCss`, `Babel`, `Typescript`
+`React`, `Material UI`, `Babel`, `Typescript`
 
-## Requirements
+## Prerequisites
 
-1. **The current project structure is unorganized. Clean / refine the project structure before getting started.**
-2. **The board should be 7 wide by 6 high**
-3. **It should alternate between the 'red' and 'yellow' players turn**
-4. **Clicking the "Drop" button should drop a token of the current player's to the bottom-most free position**
-5. **Clicking the "Drop" button on a full column should have no effect**
-6. **If either player gets four in a row (horizontally, vertically, or diagonally)**
-   1. The "COLOR's turn" heading should be replaced by "COLOR won!"
-   2. The "Drop" buttons should be replaced by a "Play again" button
-7. **If the board is full and there is no winner**
-   1. The "COLOR's turn" heading should be replaced by "Draw!"
-   2. The "Drop" buttons should be replaced by a "Play again" button
+### Install Node JS
 
-## Challenges
+Refer to https://nodejs.org/en/ to install nodejs
 
-1. **Replace the 'Drop' button with a representation of the current player's token, e.g. if it's red's turn, show a semi-transparent red token above each column.**
-2. **Keep track of and display how many times each player has won. Save it so the score is tracked even when reloading the page.**
-3. **Try to implement the `checkForWinner` function yourself: it should check for four tokens in a row in the horizontal, vertical, and diagonal directions.**
+## Cloning and Running the Application in local
 
-## How to use?
+`Clone the project into local`
 
-To run this app, you can use `npm install` command to install all required node modules.
-Then, you have to use `npm run start` command to run the app. That's it!
+You can clone this public project from this URL: https://github.com/duwand-dev/EventCalendar.git
 
-You can just click the drop buttons to play!!! Hints will help you easy to place your tokens.
-If one player wins, it'll inform you!
-The winner's information is store on the browser.
+Install all the npm packages. Go into the project folder and type the following command to install all npm packages
+
+```bash
+npm install
+```
+
+In order to run the application Type the following command
+
+```bash
+npm start
+```
+
+The Application Runs on **localhost:3000**
+
+## Challenge
+
+**Using themes in React Calendar** : This was the most challenging thing because I used React Big Calendar in this project. It doesn't support default themes inside it. So I make two different themes to solve that problem.
