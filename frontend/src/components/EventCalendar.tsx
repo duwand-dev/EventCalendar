@@ -1,4 +1,6 @@
-import { useState, MouseEvent } from "react"
+
+
+import { useState, MouseEvent, useContext, useEffect } from "react"
 import { Box, Button, ButtonGroup, Card, CardContent, CardHeader, Container, Divider } from "@mui/material"
 
 import { Calendar, type Event, dateFnsLocalizer } from "react-big-calendar"
@@ -16,226 +18,241 @@ import AddEventModal from "./AddEventModal"
 import EventInfoModal from "./EventInfoModal"
 import { AddTodoModal } from "./AddTodoModal"
 import AddDatePickerEventModal from "./AddDatePickerEventModal"
+import { AddEventAction } from "../actions/EventAction"
 
 const locales = {
-    "en-US": enUS,
+  "en-US": enUS,
 }
 
 const localizer = dateFnsLocalizer({
-    format,
-    parse,
-    startOfWeek,
-    getDay,
-    locales,
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
 })
 
 export interface ITodo {
-    _id: string
-    title: string
-    color?: string
+  _id: string
+  title: string
+  color?: string
 }
 
 export interface IEventInfo extends Event {
-    _id: string
-    description: string
-    todoId?: string
-    start?: Date
-    end?: Date
+  _id: string
+  description: string
+  todoId?: string
+  start?: Date
+  end?: Date
 }
 
 export interface EventFormData {
-    description: string
-    todoId?: string
+  description: string
+  todoId?: string
 }
 
 export interface DatePickerEventFormData {
-    description: string
-    todoId?: string
-    allDay: boolean
-    start?: Date
-    end?: Date
+  description: string
+  todoId?: string
+  allDay: boolean
+  start?: Date
+  end?: Date
 }
 
 export const generateId = () => (Math.floor(Math.random() * 10000) + 1).toString()
 
 const initialEventFormState: EventFormData = {
-    description: "",
-    todoId: undefined,
+  description: "",
+  todoId: undefined,
 }
 
 const initialDatePickerEventFormData: DatePickerEventFormData = {
-    description: "",
-    todoId: undefined,
-    allDay: false,
-    start: undefined,
-    end: undefined,
+  description: "",
+  todoId: undefined,
+  allDay: false,
+  start: undefined,
+  end: undefined,
 }
 
 export default () => {
-    const [openSlot, setOpenSlot] = useState(false)
-    const [openDatepickerModal, setOpenDatepickerModal] = useState(false)
-    const [openTodoModal, setOpenTodoModal] = useState(false)
-    const [currentEvent, setCurrentEvent] = useState<Event | IEventInfo | null>(null)
+  const [openSlot, setOpenSlot] = useState(false)
+  const [openDatepickerModal, setOpenDatepickerModal] = useState(false)
+  const [openTodoModal, setOpenTodoModal] = useState(false)
+  const [currentEvent, setCurrentEvent] = useState<Event | IEventInfo | null>(null)
 
-    const [eventInfoModal, setEventInfoModal] = useState(false)
+  const [eventInfoModal, setEventInfoModal] = useState(false)
 
-    const [events, setEvents] = useState<IEventInfo[]>([])
-    const [todos, setTodos] = useState<ITodo[]>([])
+  const [events, setEvents] = useState<IEventInfo[]>([])
+  const [todos, setTodos] = useState<ITodo[]>([])
 
-    const [eventFormData, setEventFormData] = useState<EventFormData>(initialEventFormState)
+  const [eventFormData, setEventFormData] = useState<EventFormData>(initialEventFormState)
 
-    const [datePickerEventFormData, setDatePickerEventFormData] =
-        useState<DatePickerEventFormData>(initialDatePickerEventFormData)
+  const [datePickerEventFormData, setDatePickerEventFormData] =
+    useState<DatePickerEventFormData>(initialDatePickerEventFormData)
 
-    const handleSelectSlot = (event: Event) => {
-        setOpenSlot(true)
-        setCurrentEvent(event)
+
+  // useEffect(() => {
+  //   if (1) {
+  //     import("./react-big-canlendar1.css")
+  //       .then(() => console.log("Light theme CSS loaded"))
+  //       .catch((error) => console.error("Error loading light theme CSS:", error));
+  //   } else {
+  //     import("./react-big-calendar2.css")
+  //       .then(() => console.log("Dark theme CSS loaded"))
+  //       .catch((error) => console.error("Error loading dark theme CSS:", error));
+  //   }
+  // })
+  const handleSelectSlot = (event: Event) => {
+    setOpenSlot(true)
+    setCurrentEvent(event)
+  }
+
+  const handleSelectEvent = (event: IEventInfo) => {
+    setCurrentEvent(event)
+    setEventInfoModal(true)
+  }
+
+  const handleClose = () => {
+    setEventFormData(initialEventFormState)
+    setOpenSlot(false)
+  }
+
+  const handleDatePickerClose = () => {
+    setDatePickerEventFormData(initialDatePickerEventFormData)
+    setOpenDatepickerModal(false)
+  }
+
+  const onAddEvent = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+
+    const data: IEventInfo = {
+      ...eventFormData,
+      _id: generateId(),
+      start: currentEvent?.start,
+      end: currentEvent?.end,
     }
 
-    const handleSelectEvent = (event: IEventInfo) => {
-        setCurrentEvent(event)
-        setEventInfoModal(true)
+    const newEvents = [...events, data]
+
+    setEvents(newEvents)
+
+    handleClose()
+  }
+
+  const onAddEventFromDatePicker = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+
+    const addHours = (date: Date | undefined, hours: number) => {
+      return date ? date.setHours(date.getHours() + hours) : undefined
     }
 
-    const handleClose = () => {
-        setEventFormData(initialEventFormState)
-        setOpenSlot(false)
+    const setMinToZero = (date: any) => {
+      date.setSeconds(0)
+
+      return date
     }
 
-    const handleDatePickerClose = () => {
-        setDatePickerEventFormData(initialDatePickerEventFormData)
-        setOpenDatepickerModal(false)
+    const data: IEventInfo = {
+      ...datePickerEventFormData,
+      _id: generateId(),
+      start: setMinToZero(datePickerEventFormData.start),
+      end: datePickerEventFormData.allDay
+        ? addHours(datePickerEventFormData.start, 12)
+        : setMinToZero(datePickerEventFormData.end),
     }
 
-    const onAddEvent = (e: MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault()
+    const newEvents = [...events, data]
 
-        const data: IEventInfo = {
-            ...eventFormData,
-            _id: generateId(),
-            start: currentEvent?.start,
-            end: currentEvent?.end,
-        }
+    setEvents(newEvents)
+    console.log(data);
+    setDatePickerEventFormData(initialDatePickerEventFormData)
+  }
 
-        const newEvents = [...events, data]
+  const onDeleteEvent = () => {
+    setEvents(() => [...events].filter((e) => e._id !== (currentEvent as IEventInfo)._id!))
+    setEventInfoModal(false)
+  }
 
-        setEvents(newEvents)
-        handleClose()
-    }
-
-    const onAddEventFromDatePicker = (e: MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault()
-
-        const addHours = (date: Date | undefined, hours: number) => {
-            return date ? date.setHours(date.getHours() + hours) : undefined
-        }
-
-        const setMinToZero = (date: any) => {
-            date.setSeconds(0)
-
-            return date
-        }
-
-        const data: IEventInfo = {
-            ...datePickerEventFormData,
-            _id: generateId(),
-            start: setMinToZero(datePickerEventFormData.start),
-            end: datePickerEventFormData.allDay
-                ? addHours(datePickerEventFormData.start, 12)
-                : setMinToZero(datePickerEventFormData.end),
-        }
-
-        const newEvents = [...events, data]
-
-        setEvents(newEvents)
-        setDatePickerEventFormData(initialDatePickerEventFormData)
-    }
-
-    const onDeleteEvent = () => {
-        setEvents(() => [...events].filter((e) => e._id !== (currentEvent as IEventInfo)._id!))
-        setEventInfoModal(false)
-    }
-
-    return (
-        <Box
-            mt={2}
-            mb={2}
-            component="main"
-            sx={{
-                flexGrow: 1,
-                py: 8,
-            }}
-        >
-            <Container maxWidth={false}>
-                <Card>
-                    <CardHeader title="Calendar" subheader="Create Events and Todos and manage them easily" />
-                    <Divider />
-                    <CardContent>
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                            <ButtonGroup size="large" variant="contained" aria-label="outlined primary button group">
-                                <Button onClick={() => setOpenDatepickerModal(true)} size="small" variant="contained">
-                                    Add event
-                                </Button>
-                                <Button onClick={() => setOpenTodoModal(true)} size="small" variant="contained">
-                                    Create todo
-                                </Button>
-                            </ButtonGroup>
-                        </Box>
-                        <Divider style={{ margin: 10 }} />
-                        <AddEventModal
-                            open={openSlot}
-                            handleClose={handleClose}
-                            eventFormData={eventFormData}
-                            setEventFormData={setEventFormData}
-                            onAddEvent={onAddEvent}
-                            todos={todos}
-                        />
-                        <AddDatePickerEventModal
-                            open={openDatepickerModal}
-                            handleClose={handleDatePickerClose}
-                            datePickerEventFormData={datePickerEventFormData}
-                            setDatePickerEventFormData={setDatePickerEventFormData}
-                            onAddEvent={onAddEventFromDatePicker}
-                            todos={todos}
-                        />
-                        <EventInfoModal
-                            open={eventInfoModal}
-                            handleClose={() => setEventInfoModal(false)}
-                            onDeleteEvent={onDeleteEvent}
-                            currentEvent={currentEvent as IEventInfo}
-                        />
-                        <AddTodoModal
-                            open={openTodoModal}
-                            handleClose={() => setOpenTodoModal(false)}
-                            todos={todos}
-                            setTodos={setTodos}
-                        />
-                        <Calendar
-                            localizer={localizer}
-                            events={events}
-                            onSelectEvent={handleSelectEvent}
-                            onSelectSlot={handleSelectSlot}
-                            selectable
-                            startAccessor="start"
-                            components={{ event: EventInfo }}
-                            endAccessor="end"
-                            defaultView="week"
-                            eventPropGetter={(event: any) => {
-                                const hasTodo = todos.find((todo) => todo._id === event.todoId)
-                                return {
-                                    style: {
-                                        backgroundColor: hasTodo ? hasTodo.color : "#b64fc8",
-                                        borderColor: hasTodo ? hasTodo.color : "#b64fc8",
-                                    },
-                                }
-                            }}
-                            style={{
-                                height: 900,
-                            }}
-                        />
-                    </CardContent>
-                </Card>
-            </Container>
-        </Box>
-    )
+  return (
+    <Box
+      mt={2}
+      mb={2}
+      component="main"
+      sx={{
+        flexGrow: 1,
+        py: 8,
+      }}
+    >
+      <Container maxWidth={false}>
+        <Card>
+          <CardHeader title="Calendar" subheader="Create Events and Todos and manage them easily" />
+          <Divider />
+          <CardContent>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <ButtonGroup size="large" variant="contained" aria-label="outlined primary button group">
+                <Button onClick={() => setOpenDatepickerModal(true)} size="small" variant="contained">
+                  Add event
+                </Button>
+                <Button onClick={() => setOpenTodoModal(true)} size="small" variant="contained">
+                  Create todo
+                </Button>
+              </ButtonGroup>
+            </Box>
+            <Divider style={{ margin: 10 }} />
+            <AddEventModal
+              open={openSlot}
+              handleClose={handleClose}
+              eventFormData={eventFormData}
+              setEventFormData={setEventFormData}
+              onAddEvent={onAddEvent}
+              todos={todos}
+            />
+            <AddDatePickerEventModal
+              open={openDatepickerModal}
+              handleClose={handleDatePickerClose}
+              datePickerEventFormData={datePickerEventFormData}
+              setDatePickerEventFormData={setDatePickerEventFormData}
+              onAddEvent={onAddEventFromDatePicker}
+              todos={todos}
+            />
+            <EventInfoModal
+              open={eventInfoModal}
+              handleClose={() => setEventInfoModal(false)}
+              onDeleteEvent={onDeleteEvent}
+              currentEvent={currentEvent as IEventInfo}
+            />
+            <AddTodoModal
+              open={openTodoModal}
+              handleClose={() => setOpenTodoModal(false)}
+              todos={todos}
+              setTodos={setTodos}
+            />
+            <Calendar
+              localizer={localizer}
+              events={events}
+              onSelectEvent={handleSelectEvent}
+              onSelectSlot={handleSelectSlot}
+              selectable
+              startAccessor="start"
+              components={{ event: EventInfo }}
+              endAccessor="end"
+              defaultView="week"
+              eventPropGetter={(event: any) => {
+                const hasTodo = todos.find((todo) => todo._id === event.todoId)
+                return {
+                  style: {
+                    backgroundColor: hasTodo ? hasTodo.color : "#b64fc8",
+                    borderColor: hasTodo ? hasTodo.color : "#b64fc8",
+                  },
+                }
+              }}
+              style={{
+                height: 900,
+              }}
+            />
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
+  )
 }
